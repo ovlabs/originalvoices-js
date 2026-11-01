@@ -1,0 +1,35 @@
+name: Sync API spec
+
+# Regenerates the SDK types from the live API spec and opens a PR when they change.
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run generate
+      - name: Check the packages still compile
+        id: check
+        continue-on-error: true
+        run: npm run build && npm run typecheck
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          branch: sync-api-spec
+          title: Sync API spec
+          commit-message: Regenerate SDK types from the API spec
+          body: |
+            The API spec at https://api.originalvoices.ai/docs/json changed, so `packages/sdk/src/schema.d.ts` was regenerated.
+
+            Build and typecheck: **${{ steps.check.outcome }}**. If it failed, the packages need updating for the new API before this can merge. Add a changeset if the SDK's public surface changed.

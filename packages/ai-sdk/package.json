@@ -1,0 +1,61 @@
+{
+  "name": "@originalvoices/ai-sdk",
+  "version": "0.3.0",
+  "description": "Vercel AI SDK tools that provide access to OriginalVoices' network of Digital Twins for real-time audience research",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "ai",
+    "ai-sdk",
+    "vercel",
+    "originalvoices",
+    "digital-twins",
+    "audience-research",
+    "llm",
+    "tools",
+    "market-research",
+    "consumer-insights"
+  ],
+  "author": "OriginalVoices <support@originalvoices.ai>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ovlabs/originalvoices-js.git",
+    "directory": "packages/ai-sdk"
+  },
+  "dependencies": {
+    "originalvoices": "^1.0.0"
+  },
+  "peerDependencies": {
+    "ai": "^6.0.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ai": "^6.0.0",
+    "typescript": "^5.0.0",
+    "zod": "^4.3.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

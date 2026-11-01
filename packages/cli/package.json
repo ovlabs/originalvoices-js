@@ -1,0 +1,45 @@
+{
+  "name": "@originalvoices/cli",
+  "version": "2.0.0",
+  "description": "CLI for the OriginalVoices API",
+  "type": "module",
+  "bin": {
+    "ov": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "keywords": [
+    "originalvoices",
+    "digital-twins",
+    "market-research",
+    "cli"
+  ],
+  "author": "OriginalVoices",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ovlabs/originalvoices-js.git",
+    "directory": "packages/cli"
+  },
+  "dependencies": {
+    "originalvoices": "^1.0.0",
+    "chalk": "^5.4.1",
+    "cli-table3": "^0.6.5",
+    "commander": "^13.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.3"
+  }
+}

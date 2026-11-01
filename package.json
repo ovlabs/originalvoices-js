@@ -1,0 +1,28 @@
+{
+  "name": "originalvoices-js",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/sdk",
+    "packages/cli",
+    "packages/ai-sdk",
+    "packages/mcp-server"
+  ],
+  "scripts": {
+    "generate": "openapi-typescript https://api.originalvoices.ai/docs/json -o packages/sdk/src/schema.d.ts",
+    "build": "npm run build --workspaces",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "changeset": "changeset",
+    "release": "npm run build && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^3.0.3",
+    "@types/node": "^22.0.0",
+    "openapi-typescript": "^7.13.0",
+    "typescript": "^5.9.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
