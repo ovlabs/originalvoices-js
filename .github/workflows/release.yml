@@ -1,35 +1,94 @@
 name: Release
 
+# Uses npm trusted publishing: no NPM_TOKEN. Each package trusts this workflow
+# (ovlabs/originalvoices-js, release.yml) in its npm settings.
 on:
   push:
     branches: [main]
 
-concurrency: release
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-  release:
+  select-mode:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      mode: ${{ steps.select-mode.outputs.mode }}
+      publish-plan-artifact-id: ${{ steps.select-mode.outputs.publish-plan-artifact-id }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: npm ci
+      - id: select-mode
+        uses: changesets/action/select-mode@v2
+
+  # Changesets waiting: open or update the "Version packages" PR.
+  version:
+    needs: select-mode
+    if: needs.select-mode.outputs.mode == 'version'
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
-      id-token: write # npm provenance
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
-          cache: npm
-          registry-url: https://registry.npmjs.org
+          node-version: 24
+          package-manager-cache: false
       - run: npm ci
-      # Opens a "Version packages" PR from pending changesets; when that PR is merged,
-      # publishes every package whose version isn't on npm yet.
-      - uses: changesets/action@v1
+      - uses: changesets/action/version@v2
         with:
-          publish: npm run release
-          title: Version packages
-          commit: Version packages
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
+          pr-title: Version packages
+          commit-message: Version packages
+
+  # Versions not on npm yet: build and pack them.
+  pack:
+    needs: select-mode
+    if: needs.select-mode.outputs.mode == 'publish'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      pack-dir-artifact-id: ${{ steps.pack.outputs.pack-dir-artifact-id }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - run: npm ci
+      - run: npm run build
+      - id: pack
+        uses: changesets/action/pack@v2
+        with:
+          publish-plan-artifact-id: ${{ needs.select-mode.outputs.publish-plan-artifact-id }}
+
+  # The only job that can publish.
+  publish:
+    needs: pack
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # tags and GitHub releases
+      id-token: write # npm trusted publishing and provenance
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - run: npm ci
+      - uses: changesets/action/publish@v2
+        with:
+          pack-dir-artifact-id: ${{ needs.pack.outputs.pack-dir-artifact-id }}
+          create-github-releases: true

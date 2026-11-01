@@ -30,4 +30,4 @@ A daily workflow does this and opens a PR when the API changes, so a breaking AP
 
 1. In your PR, run `npx changeset` and pick the packages and bump type.
 2. Merge. The release workflow opens a "Version packages" PR.
-3. Merge that to publish to npm.
+3. Merge that to publish to npm. Publishing uses [npm trusted publishing](https://docs.npmjs.com/trusted-publishers), so there's no npm token in the repo.
