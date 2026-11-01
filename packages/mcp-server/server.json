@@ -1,7 +1,8 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.ovlabs/originalvoices",
-  "description": "MCP server for OriginalVoices - Ask AI twins questions about any audience",
+  "description": "Ask Digital Twins of real people about anything: open and choice questions, any audience.",
+  "websiteUrl": "https://docs.originalvoices.ai/tools/mcp",
   "repository": {
     "url": "https://github.com/ovlabs/originalvoices-js",
     "source": "github",
@@ -16,6 +17,12 @@
       "transport": {
         "type": "stdio"
       }
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://api.originalvoices.ai/mcp"
     }
   ]
 }
