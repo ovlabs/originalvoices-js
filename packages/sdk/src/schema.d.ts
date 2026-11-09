@@ -88,7 +88,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Run twin generation on an existing pending audience row. */
+        /** @description Run twin generation on an existing pending audience row owned by your organization. Optional `size` (≤100) caps the audience and bills 1 answer per twin found, on success only; the balance must cover `size` answers upfront (402 otherwise). Retrying is safe: a completed audience returns its twins with `charged: 0`. */
         post: operations["generateAudienceTwins"];
         delete?: never;
         options?: never;
@@ -281,6 +281,15 @@ export interface operations {
                         /** @enum {string} */
                         type: "open";
                         question: string;
+                        /** @description Platform keys only for now. Files every participant sees with this question: images, 90-second videos or PDFs. The same file on several questions is shown once. */
+                        media?: {
+                            /** @description A file in the Original Voices media bucket, under your organization. */
+                            uri: string;
+                            /** @description The file's media type. */
+                            mediaType: "image/png" | "image/jpeg" | "image/webp" | "video/mp4" | "application/pdf";
+                            /** @description How the question refers to it, e.g. "A" or "Pack 2". Shown to the twins. */
+                            label?: string;
+                        }[];
                     } | {
                         /** @description Your key for this question in every participant's answers. Defaults to q1, q2, … in request order. */
                         id?: string;
@@ -290,10 +299,19 @@ export interface operations {
                         choices: string[];
                         /** @description Allow several picks. Defaults to false. */
                         isMultipleChoice?: boolean;
+                        /** @description Platform keys only for now. Files every participant sees with this question: images, 90-second videos or PDFs. The same file on several questions is shown once. */
+                        media?: {
+                            /** @description A file in the Original Voices media bucket, under your organization. */
+                            uri: string;
+                            /** @description The file's media type. */
+                            mediaType: "image/png" | "image/jpeg" | "image/webp" | "video/mp4" | "application/pdf";
+                            /** @description How the question refers to it, e.g. "A" or "Pack 2". Shown to the twins. */
+                            label?: string;
+                        }[];
                     })[];
                     /** @description Study targets only. Free-text criteria matched against each participant's profile and what they said in the study, e.g. "said price was the main barrier". */
                     filter?: string;
-                    /** @description Study targets only. Specific participants (twinIds from GET /v1/studies/{studyId}/participants); combines with filter. */
+                    /** @description Study targets: specific participants (twinIds from GET /v1/studies/{studyId}/participants); combines with filter. Saved-audience UUID targets: member twin ids (at most 100), echoed back as participants' twinId. */
                     twinIds?: string[];
                     /** @description How many participants to ask. Defaults: interview studies ask everyone, twin-survey studies 25, saved and network audiences everyone up to 100, described audiences 25. Audiences take at most 100. */
                     sampleSize?: number;
@@ -324,6 +342,10 @@ export interface operations {
                             matched: number;
                             /** @description Participants whose answers are returned. */
                             asked: number;
+                            usage?: {
+                                /** @description Credits deducted during this execution. Replayed responses preserve the original execution summary. */
+                                creditsCharged: number;
+                            };
                             questions: {
                                 id: string;
                                 type: "open" | "choice";
@@ -1009,7 +1031,14 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": {
+                    /** @description Optional. Caps the audience at this many twins and bills 1 answer per twin found, on success only. The organization's balance must cover `size` answers upfront. Omit for an unsized, free build (up to 200 twins). */
+                    size?: number;
+                };
+            };
+        };
         responses: {
             /** @description Default Response */
             200: {
@@ -1023,6 +1052,8 @@ export interface operations {
                             /** Format: uuid */
                             audienceId: string;
                             twinCount: number;
+                            /** @description Answers billed by this call: the twin count of a sized build that this call completed, else 0 (unsized, already complete, or completed by a concurrent call). */
+                            charged: number;
                         };
                         error: null;
                     };
